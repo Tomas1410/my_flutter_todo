@@ -31,7 +31,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
 
   // Paginacja
   int currentPage = 0; // Aktualna strona
-  final int tasksPerPage = 5; // Liczba zadań na stronę
+  int tasksPerPage = 5; // Liczba zadań na stronę (domyślnie 5)
 
   @override
   void initState() {
@@ -136,8 +136,24 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
     return (currentPage + 1) / ((tasks.length / tasksPerPage).ceil());
   }
 
+  // Oblicz liczbę zadań na stronę na podstawie wysokości ekranu
+  int calculateTasksPerPage(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double taskHeight = 72.0; // Przybliżona wysokość jednego zadania (ListTile)
+    final double otherWidgetsHeight = 200.0; // Wysokość innych widgetów (np. AppBar, przyciski)
+
+    // Oblicz dostępną wysokość dla zadań
+    final double availableHeight = screenHeight - otherWidgetsHeight;
+
+    // Oblicz liczbę zadań, które zmieszczą się na ekranie
+    return (availableHeight / taskHeight).floor();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Oblicz liczbę zadań na stronę na podstawie wysokości ekranu
+    tasksPerPage = calculateTasksPerPage(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('ToDo List'),
