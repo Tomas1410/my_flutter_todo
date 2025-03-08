@@ -31,7 +31,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
 
   // Paginacja
   int currentPage = 0; // Aktualna strona
-  final int tasksPerPage = 9; // Liczba zadań na stronę
+  final int tasksPerPage = 5; // Liczba zadań na stronę
 
   @override
   void initState() {
@@ -102,10 +102,20 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
     return tasks.sublist(startIndex, endIndex);
   }
 
+  // Czy istnieje poprzednia strona?
+  bool get hasPreviousPage {
+    return currentPage > 0;
+  }
+
+  // Czy istnieje następna strona?
+  bool get hasNextPage {
+    return (currentPage + 1) * tasksPerPage < tasks.length;
+  }
+
   // Przejdź do następnej strony
   void nextPage() {
     setState(() {
-      if ((currentPage + 1) * tasksPerPage < tasks.length) {
+      if (hasNextPage) {
         currentPage++;
       }
     });
@@ -114,7 +124,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
   // Przejdź do poprzedniej strony
   void previousPage() {
     setState(() {
-      if (currentPage > 0) {
+      if (hasPreviousPage) {
         currentPage--;
       }
     });
@@ -185,24 +195,28 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
               },
             ),
           ),
-          // Paginacja
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: previousPage,
-                  child: Text('Poprzednia'),
-                ),
-                SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: nextPage,
-                  child: Text('Następna'),
-                ),
-              ],
+          // Paginacja (widoczna tylko, gdy jest więcej niż jedna strona)
+          if (hasPreviousPage || hasNextPage)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (hasPreviousPage)
+                    ElevatedButton(
+                      onPressed: previousPage,
+                      child: Text('Back'),
+                    ),
+                  if (hasPreviousPage && hasNextPage)
+                    SizedBox(width: 16), // Odstęp między przyciskami
+                  if (hasNextPage)
+                    ElevatedButton(
+                      onPressed: nextPage,
+                      child: Text('Next'),
+                    ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
       floatingActionButton: hasCompletedTasks
