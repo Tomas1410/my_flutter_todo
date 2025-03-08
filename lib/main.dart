@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // Do konwersji listy na JSON i odwrotne
+import 'dart:convert'; // Do konwersji listy na JSON i odwrotnie
 
 void main() {
   runApp(MyApp());
@@ -28,6 +28,10 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
   List<Task> tasks = []; // Lista zadań
   TextEditingController taskController = TextEditingController();
   FocusNode focusNode = FocusNode(); // FocusNode do zarządzania focusem
+
+  // Paginacja
+  int currentPage = 0; // Aktualna strona
+  final int tasksPerPage = 9; // Liczba zadań na stronę
 
   @override
   void initState() {
@@ -88,6 +92,34 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
     return tasks.any((task) => task.isCompleted);
   }
 
+  // Pobierz zadania dla aktualnej strony
+  List<Task> get tasksForCurrentPage {
+    int startIndex = currentPage * tasksPerPage;
+    int endIndex = startIndex + tasksPerPage;
+    if (endIndex > tasks.length) {
+      endIndex = tasks.length;
+    }
+    return tasks.sublist(startIndex, endIndex);
+  }
+
+  // Przejdź do następnej strony
+  void nextPage() {
+    setState(() {
+      if ((currentPage + 1) * tasksPerPage < tasks.length) {
+        currentPage++;
+      }
+    });
+  }
+
+  // Przejdź do poprzedniej strony
+  void previousPage() {
+    setState(() {
+      if (currentPage > 0) {
+        currentPage--;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,33 +155,52 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: tasks.length,
+              itemCount: tasksForCurrentPage.length,
               itemBuilder: (context, index) {
+                final task = tasksForCurrentPage[index];
                 return Card(
                   margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   child: InkWell(
                     onTap: () {
-                      toggleTaskCompletion(index); // Zaznacz/odznacz po kliknięciu kafelka
+                      toggleTaskCompletion(tasks.indexOf(task)); // Zaznacz/odznacz po kliknięciu kafelka
                     },
                     child: ListTile(
                       title: Text(
-                        tasks[index].name,
+                        task.name,
                         style: TextStyle(
-                          decoration: tasks[index].isCompleted
+                          decoration: task.isCompleted
                               ? TextDecoration.lineThrough
                               : TextDecoration.none,
                         ),
                       ),
                       leading: Checkbox(
-                        value: tasks[index].isCompleted,
+                        value: task.isCompleted,
                         onChanged: (value) {
-                          toggleTaskCompletion(index); // Zaznacz/odznacz po kliknięciu checkboxa
+                          toggleTaskCompletion(tasks.indexOf(task)); // Zaznacz/odznacz po kliknięciu checkboxa
                         },
                       ),
                     ),
                   ),
                 );
               },
+            ),
+          ),
+          // Paginacja
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: previousPage,
+                  child: Text('Poprzednia'),
+                ),
+                SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: nextPage,
+                  child: Text('Następna'),
+                ),
+              ],
             ),
           ),
         ],
