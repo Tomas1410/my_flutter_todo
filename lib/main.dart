@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // Do konwersji listy na JSON i odwrotnie
+import 'dart:convert'; // Do konwersji listy na JSON i odwrotne
 
 void main() {
   runApp(MyApp());
@@ -27,11 +27,18 @@ class ToDoListScreen extends StatefulWidget {
 class _ToDoListScreenState extends State<ToDoListScreen> {
   List<Task> tasks = []; // Lista zadań
   TextEditingController taskController = TextEditingController();
+  FocusNode focusNode = FocusNode(); // FocusNode do zarządzania focusem
 
   @override
   void initState() {
     super.initState();
     _loadTasks(); // Wczytaj zadania przy starcie aplikacji
+  }
+
+  @override
+  void dispose() {
+    focusNode.dispose(); // Zwolnij zasoby FocusNode
+    super.dispose();
   }
 
   void _loadTasks() async {
@@ -59,6 +66,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         taskController.clear();
         _saveTasks(); // Zapisz zadania po dodaniu
       });
+      focusNode.requestFocus(); // Utrzymaj focus na polu tekstowym
     }
   }
 
@@ -99,6 +107,10 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                       labelText: 'Nowe zadanie',
                       border: OutlineInputBorder(),
                     ),
+                    onSubmitted: (value) {
+                      addTask(); // Dodaj zadanie po naciśnięciu Enter
+                    },
+                    focusNode: focusNode, // Przypisz FocusNode do pola tekstowego
                   ),
                 ),
                 SizedBox(width: 8),
