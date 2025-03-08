@@ -1,13 +1,15 @@
 class TodoList {
   String name;
   List<Task> tasks;
+  String? password; // Opcjonalne hasło
 
-  TodoList({required this.name, required this.tasks});
+  TodoList({required this.name, required this.tasks, this.password});
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
       'tasks': tasks.map((task) => task.toJson()).toList(),
+      'password': password,
     };
   }
 
@@ -15,6 +17,7 @@ class TodoList {
     return TodoList(
       name: json['name'],
       tasks: (json['tasks'] as List).map((task) => Task.fromJson(task)).toList(),
+      password: json['password'],
     );
   }
 }

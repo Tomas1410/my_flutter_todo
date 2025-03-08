@@ -23,14 +23,66 @@ class _ListSelectionScreenState extends State<ListSelectionScreen> {
     setState(() {});
   }
 
-  void addList(String name) {
-    if (name.isNotEmpty) {
-      setState(() {
-        todoLists.add(TodoList(name: name, tasks: []));
-        saveTodoLists(todoLists);
-      });
-    }
+void _showAddListDialog() {
+  final TextEditingController passwordController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Dodaj nową listę'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: listNameController,
+              decoration: InputDecoration(
+                labelText: 'Nazwa listy',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                labelText: 'Hasło (opcjonalne)',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true, // Ukryj hasło
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Anuluj'),
+          ),
+          TextButton(
+            onPressed: () {
+              addList(listNameController.text, passwordController.text);
+              listNameController.clear();
+              passwordController.clear();
+              Navigator.of(context).pop();
+            },
+            child: Text('Dodaj'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void addList(String name, String password) {
+  if (name.isNotEmpty) {
+    setState(() {
+      todoLists.add(TodoList(name: name, tasks: [], password: password.isNotEmpty ? password : null));
+      saveTodoLists(todoLists);
+    });
   }
+}
+
 
   void deleteList(int index) {
     setState(() {
@@ -103,40 +155,6 @@ class _ListSelectionScreenState extends State<ListSelectionScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  void _showAddListDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Dodaj nową listę'),
-          content: TextField(
-            controller: listNameController,
-            decoration: InputDecoration(
-              labelText: 'Nazwa listy',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Anuluj'),
-            ),
-            TextButton(
-              onPressed: () {
-                addList(listNameController.text);
-                listNameController.clear();
-                Navigator.of(context).pop();
-              },
-              child: Text('Dodaj'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

@@ -13,13 +13,35 @@ class TodoListScreen extends StatefulWidget {
 }
 
 class _TodoListScreenState extends State<TodoListScreen> {
+  bool _isLocked = true; // Czy lista jest zablokowana?
   TextEditingController taskController = TextEditingController();
-  FocusNode focusNode = FocusNode();
+  FocusNode taskFocusNode = FocusNode(); // FocusNode dla pola tekstowego zadań
+  FocusNode passwordFocusNode = FocusNode(); // FocusNode dla pola tekstowego hasła
+
+  @override
+  void initState() {
+    super.initState();
+    _isLocked = widget.list.password != null; // Blokuj, jeśli lista ma hasło
+  }
 
   @override
   void dispose() {
-    focusNode.dispose();
+    taskFocusNode.dispose();
+    passwordFocusNode.dispose();
     super.dispose();
+  }
+
+  void _unlockList(String password) {
+    if (widget.list.password == password) {
+      setState(() {
+        _isLocked = false; // Odblokuj listę
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nieprawidłowe hasło')),
+      );
+      passwordFocusNode.requestFocus(); // Przywróć focus do pola tekstowego hasła
+    }
   }
 
   void addTask() {
@@ -28,7 +50,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
         widget.list.tasks.add(Task(name: taskController.text, isCompleted: false));
         taskController.clear();
         saveTodoLists([widget.list]);
-        focusNode.requestFocus();
+        taskFocusNode.requestFocus();
       });
     }
   }
@@ -60,6 +82,53 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLocked) {
+      return _buildLockScreen();
+    } else {
+      return _buildTodoListScreen();
+    }
+  }
+
+  Widget _buildLockScreen() {
+    final TextEditingController passwordController = TextEditingController();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.list.name),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Ta lista jest zabezpieczona hasłem', style: TextStyle(fontSize: 18)),
+            SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                labelText: 'Wpisz hasło',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true, // Ukryj hasło
+              focusNode: passwordFocusNode, // Przypisz FocusNode
+              onSubmitted: (value) {
+                _unlockList(passwordController.text); // Odblokuj po naciśnięciu Enter
+              },
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                _unlockList(passwordController.text);
+              },
+              child: Text('Odblokuj'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTodoListScreen() {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.list.name),
@@ -80,7 +149,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     onSubmitted: (value) {
                       addTask();
                     },
-                    focusNode: focusNode,
+                    focusNode: taskFocusNode,
                   ),
                 ),
                 SizedBox(width: 8),
