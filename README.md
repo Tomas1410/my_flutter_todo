@@ -14,3 +14,12 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+Aktualizacja zależności: Jeśli dodasz nowe zależności do pubspec.yaml, uruchom:
+flutter pub get
+
+Budowanie aplikacji: Aby zbudować aplikację na Androida, użyj:
+flutter build apk
+
+Czyszczenie projektu: Jeśli napotkasz problemy, możesz wyczyścić projekt:
+flutter clean

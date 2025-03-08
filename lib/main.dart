@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert'; // Do konwersji listy na JSON i odwrotnie
 
 void main() {
   runApp(MyApp());
@@ -26,11 +28,36 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
   List<Task> tasks = []; // Lista zadań
   TextEditingController taskController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks(); // Wczytaj zadania przy starcie aplikacji
+  }
+
+  void _loadTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? tasksJson = prefs.getString('tasks');
+    if (tasksJson != null) {
+      setState(() {
+        tasks = (json.decode(tasksJson) as List)
+            .map((task) => Task.fromJson(task))
+            .toList();
+      });
+    }
+  }
+
+  void _saveTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String tasksJson = json.encode(tasks.map((task) => task.toJson()).toList());
+    prefs.setString('tasks', tasksJson);
+  }
+
   void addTask() {
     if (taskController.text.isNotEmpty) {
       setState(() {
         tasks.add(Task(name: taskController.text, isCompleted: false));
         taskController.clear();
+        _saveTasks(); // Zapisz zadania po dodaniu
       });
     }
   }
@@ -38,12 +65,14 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
   void toggleTaskCompletion(int index) {
     setState(() {
       tasks[index].isCompleted = !tasks[index].isCompleted;
+      _saveTasks(); // Zapisz zadania po zmianie stanu
     });
   }
 
   void removeSelectedTasks() {
     setState(() {
       tasks.removeWhere((task) => task.isCompleted);
+      _saveTasks(); // Zapisz zadania po usunięciu
     });
   }
 
@@ -134,4 +163,20 @@ class Task {
   bool isCompleted;
 
   Task({required this.name, this.isCompleted = false});
+
+  // Konwersja do JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'isCompleted': isCompleted,
+    };
+  }
+
+  // Konwersja z JSON
+  factory Task.fromJson(Map<String, dynamic> json) {
+    return Task(
+      name: json['name'],
+      isCompleted: json['isCompleted'],
+    );
+  }
 }
