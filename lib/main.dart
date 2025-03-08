@@ -88,6 +88,13 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
     });
   }
 
+  void editTask(int index, String newName) {
+    setState(() {
+      tasks[index].name = newName;
+      _saveTasks(); // Zapisz zadania po edycji
+    });
+  }
+
   bool get hasCompletedTasks {
     return tasks.any((task) => task.isCompleted);
   }
@@ -211,6 +218,12 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
                           toggleTaskCompletion(tasks.indexOf(task)); // Zaznacz/odznacz po kliknięciu checkboxa
                         },
                       ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit, color: Colors.blue), // Ikona edycji
+                        onPressed: () {
+                          _showEditDialog(tasks.indexOf(task)); // Otwórz dialog edycji
+                        },
+                      ),
                     ),
                   ),
                 );
@@ -263,6 +276,42 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
               elevation: 4, // Cień
             )
           : null, // FAB jest niewidoczny, gdy nie ma zaznaczonych zadań
+    );
+  }
+
+  // Wyświetl dialog edycji zadania
+  void _showEditDialog(int index) {
+    final TextEditingController editController = TextEditingController(text: tasks[index].name);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edytuj zadanie'),
+          content: TextField(
+            controller: editController,
+            decoration: InputDecoration(
+              labelText: 'Nowa nazwa zadania',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Zamknij dialog
+              },
+              child: Text('Anuluj'),
+            ),
+            TextButton(
+              onPressed: () {
+                editTask(index, editController.text); // Zaktualizuj zadanie
+                Navigator.of(context).pop(); // Zamknij dialog
+              },
+              child: Text('Zapisz'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
