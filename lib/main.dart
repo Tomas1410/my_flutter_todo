@@ -130,6 +130,12 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
     });
   }
 
+  // Oblicz postęp paginacji (0.0 - 1.0)
+  double get paginationProgress {
+    if (tasks.isEmpty) return 0.0;
+    return (currentPage + 1) / ((tasks.length / tasksPerPage).ceil());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,21 +205,31 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
           if (hasPreviousPage || hasNextPage)
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
                 children: [
-                  if (hasPreviousPage)
-                    ElevatedButton(
-                      onPressed: previousPage,
-                      child: Text('Back'),
-                    ),
-                  if (hasPreviousPage && hasNextPage)
-                    SizedBox(width: 16), // Odstęp między przyciskami
-                  if (hasNextPage)
-                    ElevatedButton(
-                      onPressed: nextPage,
-                      child: Text('Next'),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (hasPreviousPage)
+                        ElevatedButton(
+                          onPressed: previousPage,
+                          child: Text('<'),
+                        ),
+                      if (hasPreviousPage && hasNextPage)
+                        SizedBox(width: 16), // Odstęp między przyciskami
+                      if (hasNextPage)
+                        ElevatedButton(
+                          onPressed: nextPage,
+                          child: Text('>'),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 8), // Odstęp między przyciskami a paskiem postępu
+                  LinearProgressIndicator(
+                    value: paginationProgress, // Postęp paginacji
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  ),
                 ],
               ),
             ),
